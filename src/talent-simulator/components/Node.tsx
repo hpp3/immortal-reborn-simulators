@@ -9,14 +9,17 @@ import { NodeType } from './types';
 import { SHOW_PERCENTAGE } from './Constants';
 
 export interface NodeProps extends NodeType {
-  onAdd: (selectedPoints?: number) => void;
-  onRemove: (selectedPoints?: number) => void;
+  onAdd?: (selectedPoints?: number) => void;
+  onRemove?: (selectedPoints?: number) => void;
   nodes: any;
   showTooltip?: boolean;
   searchString?: string;
-  remindPoints: number;
+  remindPoints?: number;
   t: any;
   isChinese: boolean;
+  isKeyNode?: boolean;
+  isMSTNode?: boolean;
+  onNodeClick?: () => void;
 }
 
 const getTooltip = (
@@ -92,6 +95,9 @@ export const Node = withTranslation('translations')(
     remindPoints,
     t,
     isChinese,
+    isKeyNode,
+    isMSTNode,
+    onNodeClick,
   }: NodeProps) => {
     const circleRadius = 2.5;
     const sideLength = circleRadius * 4;
@@ -127,7 +133,7 @@ export const Node = withTranslation('translations')(
             fullNameList?.some(name => t(name).toLocaleLowerCase().includes(_searchString))
         ));
 
-    const isAddable = remindPoints > 0 && (isPartiallySelected || isOpen);
+    const isAddable = (remindPoints ?? 0) > 0 && (isPartiallySelected || isOpen);
 
     const isRemovable =
       isPartiallySelected ||
@@ -142,20 +148,26 @@ export const Node = withTranslation('translations')(
             return linkedNode.selectedPoints;
           }).length < 1));
 
-    const nodeColor = isFullySelected ? 'blue' : isPartiallySelected || isOpen ? 'green' : 'LightGrey';
+    let nodeColor = 'LightGrey';
+    if (isKeyNode) nodeColor = 'blue';
+    else if (isMSTNode) nodeColor = 'green';
 
     return (
       <>
         {linkedNodesIndexes.map(nodeIndex => {
           if (nodeIndex > id) {
             const nextNode = nodes[nodeIndex];
+            const isMSTEdge = isMSTNode && nextNode.isMSTNode;
+            const isSelectedEdge = (isPartiallySelected && nextNode.selectedPoints === nextNode.points) ||
+                                 (isFullySelected && nextNode.selectedPoints);
             const color =
-              (isPartiallySelected && nextNode.selectedPoints === nextNode.points) ||
-              (isFullySelected && nextNode.selectedPoints)
-                ? 'blue'
-                : isFullySelected || nextNode.selectedPoints === nextNode.points
+              isMSTEdge
                 ? 'green'
+                : isSelectedEdge
+                ? 'blue'
                 : 'LightGrey';
+            const strokeWidth = isMSTEdge ? 2 : 1;
+            
             if (x === nextNode.x || y === nextNode.y) {
               return (
                 <line
@@ -165,6 +177,7 @@ export const Node = withTranslation('translations')(
                   x2={nextNode.x}
                   y2={nextNode.y}
                   stroke={color}
+                  strokeWidth={strokeWidth}
                   key={`${id}-${nextNode.id}`}
                 />
               );
@@ -185,18 +198,18 @@ export const Node = withTranslation('translations')(
               // go top left/right with top first
               return (
                 <React.Fragment key={`${id}-${nextNode.id}`}>
-                  <line x1={x} y1={y} z={100} x2={x} y2={nextNode.y} stroke={color} />
+                  <line x1={x} y1={y} z={100} x2={x} y2={nextNode.y} stroke={color} strokeWidth={strokeWidth} />
                   <rect x={x - 0.5} y={nextNode.y - 0.5} width="1" height="1" fill={color} />
-                  <line x1={x} y1={nextNode.y} z={100} x2={nextNode.x} y2={nextNode.y} stroke={color} />
+                  <line x1={x} y1={nextNode.y} z={100} x2={nextNode.x} y2={nextNode.y} stroke={color} strokeWidth={strokeWidth} />
                 </React.Fragment>
               );
             } else {
               // go top left/right with left/right first
               return (
                 <React.Fragment key={`${id}-${nextNode.id}`}>
-                  <line x1={x} y1={y} z={100} x2={nextNode.x} y2={y} stroke={color} />
+                  <line x1={x} y1={y} z={100} x2={nextNode.x} y2={y} stroke={color} strokeWidth={strokeWidth} />
                   <rect x={nextNode.x - 0.5} y={y - 0.5} width="1" height="1" fill={color} />
-                  <line x1={nextNode.x} y1={y} z={100} x2={nextNode.x} y2={nextNode.y} stroke={color} />
+                  <line x1={nextNode.x} y1={y} z={100} x2={nextNode.x} y2={nextNode.y} stroke={color} strokeWidth={strokeWidth} />
                 </React.Fragment>
               );
             }
@@ -208,9 +221,12 @@ export const Node = withTranslation('translations')(
           y={y - circleRadius * 2}
           width={sideLength + 5}
           height={sideLength + 5}
-          viewBox={`0 0 ${sideLength + 5} ${sideLength + 5}`}>
+          viewBox={`0 0 ${sideLength + 5} ${sideLength + 5}`}
+          onClick={onNodeClick}
+          style={{ cursor: 'pointer' }}
+        >
           {isFound && <circle cx={circleRadius * 2} cy={circleRadius * 2} r={4} stroke={'red'} fillOpacity={0} />}
-          {isRemovable && (
+          {isRemovable && onRemove && (
             <rect
               x={9}
               y={0}
@@ -236,9 +252,9 @@ export const Node = withTranslation('translations')(
               userSelect: 'none', // Non-prefixed version, currently supported by Chrome, Opera and Firefox
             }}
             onClick={
-              isAddable
-                ? () => onAdd(Math.min(points - selectedPoints, remindPoints))
-                : isRemovable
+              isAddable && onAdd
+                ? () => onAdd(Math.min(points - selectedPoints, remindPoints ?? 0))
+                : isRemovable && onRemove
                 ? () => onRemove(selectedPoints)
                 : () => {}
             }>
@@ -250,8 +266,6 @@ export const Node = withTranslation('translations')(
               cy={circleRadius * 2}
               r={circleRadius}
               type={type}
-              onClick={isAddable ? () => onAdd() : () => {}}
-              style={isAddable ? { cursor: 'pointer' } : undefined}
               fill={nodeColor}
             />
           </SvgTooltip>

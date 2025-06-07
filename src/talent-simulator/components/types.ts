@@ -24,7 +24,7 @@ export type NODEType = {
   id: number;
   x: number;
   y: number;
-  points: 1 | 2 | 3 | 4 | 5;
+  points: 0 | 1 | 2 | 3 | 4 | 5;
   type: 'basic' | 'notable' | 'keystone';
   /** Expended name for stats summary, use name if no fullNameList */
   perks: PerksType;
@@ -37,4 +37,6 @@ export type NODESType = NODEType[];
 
 export interface NodeType extends NODEType {
   selectedPoints: number;
+  isKeyNode?: boolean;
+  isMSTNode?: boolean;
 }

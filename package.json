@@ -20,7 +20,9 @@
     "react-i18next": "^11.8.4",
     "react-scripts": "3.4.3",
     "styled-components": "^5.2.0",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "@types/babel__core": "7.1.18",
+    "@types/babel__traverse": "7.14.2"
   },
   "scripts": {
     "start": "npm run app",
