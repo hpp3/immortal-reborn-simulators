@@ -1,12 +1,14 @@
 {
   "name": "immortal-reborn-simulators",
-  "homepage": "https://kongyuyu.github.io/immortal-reborn-simulators/",
+  "homepage": "https://hpp3.github.io/immortal-reborn-simulators/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "@types/babel__core": "7.1.18",
+    "@types/babel__traverse": "7.14.2",
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.62",
     "@types/react": "^16.9.49",
@@ -20,14 +22,12 @@
     "react-i18next": "^11.8.4",
     "react-scripts": "3.4.3",
     "styled-components": "^5.2.0",
-    "typescript": "^3.9.7",
-    "@types/babel__core": "7.1.18",
-    "@types/babel__traverse": "7.14.2"
+    "typescript": "^3.9.7"
   },
   "scripts": {
-    "start": "npm run app",
+    "start": "react-scripts --openssl-legacy-provider start",
     "app": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
@@ -51,6 +51,7 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^3.1.0"
-  }
+    "gh-pages": "^3.2.3"
+  },
+  "packageManager": "yarn@3.4.1+sha256.b51208ae422260539b3503fe5b596f4f236947d69ed1f8797f9830331a38c841"
 }
